@@ -1,220 +1,238 @@
-# Layered - Architecture Drift Detection Platform
+# Layered — Architecture Drift Detection Platform
 
-A powerful tool for detecting and preventing architecture degradation in software projects through automated dependency analysis and layer violation detection.
+**Layered** is an architecture drift detection platform that helps engineers understand, monitor, and reason about how software architecture evolves over time.
 
-## Features
+Instead of treating architecture as a static diagram, Layered models it as a **time-based system**, detecting violations, tracking drift, and visualizing dependency boundaries as they change across analysis runs.
 
-- **Architecture Understanding**: Automatically infers architectural layers from code structure
-- **Drift Detection**: Identifies 4 types of violations:
-  - Layer violations (bypassing architectural layers)
-  - Circular dependencies
-  - Legacy system access violations
-  - Gateway bypasses
-- **AI Explanations**: Provides detailed explanations and remediation suggestions
-- **Visual Graph**: Interactive dependency graph with violation highlighting
-- **Real-time Analysis**: Analyze repositories on-demand
+---
+
+## Why Layered?
+
+As codebases grow, architectural intent often fades:
+
+- Services bypass intended layers
+- Legacy systems become tightly coupled
+- Circular dependencies creep in silently
+
+Layered detects these issues early by analyzing dependencies, enforcing architectural boundaries, and preserving **historical snapshots** so drift can be traced back to its origin.
+
+---
+
+## Core Features
+
+### 🗺️ Architecture Map
+
+- Automatically infers architectural layers from code structure
+- Visualizes dependencies as an interactive graph
+- Clearly highlights forbidden and unintended dependency directions
+
+### 🚨 Drift Detection
+
+Detects and classifies architectural violations, including:
+
+- Layer boundary violations
+- Circular dependencies
+- Legacy system access
+- API gateway bypasses
+
+Violations are categorized by severity (Critical / High / Medium) and surfaced contextually in the graph.
+
+### 🕒 Analysis History
+
+- Stores each analysis run as an **immutable snapshot**
+- Enables time-based reasoning about architecture
+- Compare snapshots to see when drift was introduced or resolved
+
+### ⚙️ Settings & Architecture Rules
+
+- Control which rules are enforced during analysis
+- Adjust severity thresholds and visualization behavior
+- Embedded documentation explains _why_ rules exist, not just what they do
+
+### 🤖 AI-Assisted Explanations
+
+- Generates clear, technical explanations for detected violations
+- Provides remediation guidance grounded in architectural best practices
+
+---
 
 ## Tech Stack
 
 ### Backend
 
-- **Python 3.12** with FastAPI
-- **NetworkX** for dependency graph analysis
-- **SQLAlchemy** with SQLite for persistence
-- **AST parsing** for static code analysis
+- **Python 3.12**
+- **FastAPI** — async API framework
+- **MongoDB Atlas** — immutable snapshot storage
+- **Motor** — async MongoDB client
+- **NetworkX** — dependency graph modeling
+- **AST Parsing** — static code analysis
 
 ### Frontend
 
-- **React 18** with TypeScript
-- **Vite** for fast development
-- **Tailwind CSS** for styling
-- **Framer Motion** for animations
+- **React 18 + TypeScript**
+- **Vite** — fast build tooling
+- **Tailwind CSS** — UI styling
+- **Framer Motion** — subtle UI animations
+- **React Flow** — interactive architecture visualization
 
-## Getting Started
+---
+
+## System Design Overview
+
+### Architecture Principles
+
+- Architecture is treated as **data**, not documentation
+- Each analysis run produces a **complete snapshot**
+- Snapshots are immutable and time-ordered
+- Drift is detected by comparing _intent_ vs _actual dependencies_
+
+---
+
+## Project Structure
+
+### Backend
+
+```
+backend/
+├── app/
+│   ├── main.py              # FastAPI entry point
+│   ├── api/                 # API routes
+│   ├── analysis/            # Code parsing & dependency analysis
+│   ├── graph/               # Dependency graph construction
+│   ├── rules/               # Architecture rules engine
+│   ├── drift/               # Drift & violation detection
+│   ├── history/             # Snapshot persistence & comparison
+│   ├── settings/            # Analysis configuration
+│   └── db/                  # MongoDB connection
+└── requirements.txt
+```
+
+### Frontend
+
+```
+frontend/
+├── src/
+│   ├── pages/
+│   │   ├── ArchitectureMap.tsx
+│   │   ├── DriftViolations.tsx
+│   │   ├── History.tsx
+│   │   └── Settings.tsx
+│   ├── components/
+│   │   ├── Sidebar.tsx
+│   │   ├── GraphCanvas.tsx
+│   │   └── ViolationCard.tsx
+│   ├── services/
+│   │   └── api.ts
+│   └── App.tsx
+└── package.json
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint                   | Description                                  |
+| ------ | -------------------------- | -------------------------------------------- |
+| POST   | `/analysis`                | Run architecture analysis and store snapshot |
+| GET    | `/architecture-map`        | Get architecture graph for a snapshot        |
+| GET    | `/violations`              | List detected violations                     |
+| GET    | `/history`                 | List historical analysis snapshots           |
+| GET    | `/history/{id}`            | Retrieve a specific snapshot                 |
+| GET    | `/history/compare/{a}/{b}` | Compare two snapshots                        |
+| GET    | `/settings`                | Get analysis settings                        |
+| POST   | `/settings`                | Update analysis settings                     |
+| GET    | `/health`                  | Health check                                 |
+
+---
+
+## Local Development
 
 ### Prerequisites
 
 - Python 3.12+
 - Node.js 18+
-- npm or yarn
+- MongoDB Atlas cluster
+
+---
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
-
 ```bash
 cd backend
-```
 
-2. Install Python dependencies:
-
-```bash
 pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
 
-3. Start the FastAPI server:
-
-```bash
-python -m uvicorn app.main:app --reload --port 8000
-```
-
-The backend will be available at http://localhost:8000
-
-- API docs: http://localhost:8000/docs
-- Health check: http://localhost:8000/health
+Backend runs at: `http://localhost:8000`  
+API docs: `http://localhost:8000/docs`
 
 ### Frontend Setup
 
-1. Navigate to the frontend directory:
-
 ```bash
 cd Layered_UI
-```
-
-2. Install dependencies:
-
-```bash
 npm install
-```
-
-3. Start the development server:
-
-```bash
 npm run dev
 ```
 
-The frontend will be available at http://localhost:5173
+Frontend runs at: `http://localhost:5173`
 
-## Usage
+### Environment Configuration
 
-1. **Start both servers** (backend on 8000, frontend on 5173)
-
-2. **Open the application** in your browser at http://localhost:5173
-
-3. **Analyze a repository**:
-
-   - Enter the absolute path to your Python repository in the input field
-   - Click "Analyze" or press Enter
-   - Wait for the analysis to complete
-
-4. **View results**:
-
-   - **Graph View**: See the dependency graph with nodes organized by architectural layers
-   - **Violations View**: Browse detected violations in a card layout
-   - Click any violation to see detailed information in the right panel
-
-5. **Understand violations**:
-   - Each violation shows severity (Critical, High, Medium)
-   - AI-generated explanations describe why it's problematic
-   - Suggested fixes provide actionable remediation steps
-
-## Architecture
-
-### Backend Structure
+**Backend (.env)**
 
 ```
-backend/
-├── app/
-│   ├── main.py              # FastAPI application entry
-│   ├── api/
-│   │   └── endpoints.py     # REST API routes
-│   ├── models/
-│   │   ├── schemas.py       # Pydantic models
-│   │   └── database.py      # SQLAlchemy models
-│   ├── analysis/
-│   │   ├── analyzer.py      # AST-based code analysis
-│   │   └── inference.py     # Layer inference engine
-│   ├── graph/
-│   │   └── builder.py       # NetworkX dependency graph
-│   ├── rules/
-│   │   └── engine.py        # Architectural rules
-│   ├── drift/
-│   │   └── detector.py      # Violation detection
-│   ├── ai/
-│   │   └── explainer.py     # AI explanation generation
-│   └── db/
-│       └── connection.py    # Database connection
-└── requirements.txt
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/layered
+OPENAI_API_KEY=optional
 ```
 
-### Frontend Structure
+**Frontend**
 
 ```
-Layered_UI/
-├── src/
-│   ├── App.tsx
-│   ├── pages/
-│   │   └── Dashboard.tsx    # Main dashboard view
-│   ├── components/
-│   │   ├── Sidebar.tsx      # Navigation
-│   │   ├── CommandPalette.tsx  # Analysis trigger
-│   │   ├── ArchitectureGraph.tsx  # Graph visualization
-│   │   ├── ViolationsInbox.tsx    # Violations list
-│   │   └── RightPanel.tsx   # Violation details
-│   └── services/
-│       └── api.ts           # Backend API client
-└── package.json
+VITE_API_URL=http://localhost:8000
 ```
 
-## API Endpoints
+---
 
-- `POST /analyze` - Trigger repository analysis
-- `GET /architecture-map` - Get dependency graph with layers
-- `GET /violations` - List all violations
-- `GET /violations/{id}` - Get detailed violation info
-- `GET /history` - Get analysis history
-- `GET /health` - Health check
+## Deployment
 
-## Configuration
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** MongoDB Atlas
 
-### Backend (`.env`)
+This setup provides a production-like environment while remaining lightweight and cost-effective.
 
-```
-DATABASE_URL=sqlite+aiosqlite:///./layered.db
-OPENAI_API_KEY=your_key_here  # Optional, for enhanced AI explanations
-```
+---
 
-### Frontend
+## Design Philosophy
 
-The frontend automatically connects to `http://localhost:8000` for the backend API.
+Layered intentionally avoids:
 
-## Development
+- User accounts
+- Team management
+- Alerts and notifications
+- CI/CD enforcement
 
-### Running Tests
+The focus is on **clarity, correctness, and architectural reasoning**, not SaaS complexity.
 
-```bash
-# Backend
-cd backend
-pytest
+---
 
-# Frontend
-cd Layered_UI
-npm test
-```
+## Future Enhancements
 
-### Building for Production
+- Support for additional languages (Java, Go)
+- Custom rule definitions
+- CI/CD integration
+- Architecture trend visualization
+- Large-repo optimization
 
-```bash
-# Frontend
-cd Layered_UI
-npm run build
-
-# Backend is production-ready as-is
-```
-
-## Roadmap
-
-- [ ] Support for Java/Spring projects
-- [ ] Custom rule definitions
-- [ ] Integration with CI/CD pipelines
-- [ ] Historical trend analysis
-- [ ] Team collaboration features
-- [ ] Slack/Teams notifications
+---
 
 ## License
 
 MIT
 
-## Contributing
+---
 
-Contributions welcome! Please open an issue or PR.
+## Author
+
+Built as a portfolio project to explore architecture analysis, system design, and time-based reasoning in software systems.
